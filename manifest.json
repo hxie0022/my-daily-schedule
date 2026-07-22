@@ -1,7 +1,7 @@
 {
-  "name": "今日安排 · 北京墨尔本",
-  "short_name": "今日安排",
-  "description": "记录北京时间安排，自动换算成墨尔本时间",
+  "name": "My Daily Schedule · Beijing/Melbourne",
+  "short_name": "My Daily Schedule",
+  "description": "Log schedule items in Beijing time, auto-converted to Melbourne time",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

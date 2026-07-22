@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>今日安排</title>
+<title>My Daily Schedule</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -290,13 +290,13 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>📅 今日安排</h1>
+      <h1>📅 My Daily Schedule</h1>
     </header>
 
     <div class="layout">
       <div class="col-left">
         <div id="list-area">
-          <div class="loading">加载中…</div>
+          <div class="loading">Loading…</div>
         </div>
       </div>
 
@@ -311,7 +311,7 @@
               <line id="hand-s-bj" x1="50" y1="50" x2="50" y2="15" stroke="var(--beijing)" stroke-width="1" stroke-linecap="round"/>
               <circle cx="50" cy="50" r="2.5" fill="var(--beijing-deep)"/>
             </svg>
-            <div class="city bj">北京</div>
+            <div class="city bj">Beijing</div>
             <div class="digital" id="digital-bj">--:--</div>
           </div>
 
@@ -324,37 +324,37 @@
               <line id="hand-s-mel" x1="50" y1="50" x2="50" y2="15" stroke="var(--melbourne)" stroke-width="1" stroke-linecap="round"/>
               <circle cx="50" cy="50" r="2.5" fill="var(--melbourne-deep)"/>
             </svg>
-            <div class="city mel">墨尔本</div>
+            <div class="city mel">Melbourne</div>
             <div class="digital" id="digital-mel">--:--</div>
           </div>
         </div>
 
         <div class="card">
-          <h2>添加一条日程</h2>
+          <h2>Add a schedule item</h2>
           <div class="field">
-            <label for="task-text">内容</label>
+            <label for="task-text">Content</label>
             <select id="task-text">
-              <option value="观课">观课</option>
-              <option value="批改作业">批改作业</option>
-              <option value="授课">授课</option>
-              <option value="__other__">其他…</option>
+              <option value="Observe class">Observe class</option>
+              <option value="Grade homework">Grade homework</option>
+              <option value="Teach class">Teach class</option>
+              <option value="__other__">Other…</option>
             </select>
-            <input type="text" id="task-text-other" placeholder="请输入具体内容" style="display:none; margin-top:8px;">
+            <input type="text" id="task-text-other" placeholder="Enter details" style="display:none; margin-top:8px;">
           </div>
           <div class="field">
-            <label for="task-time">时间</label>
+            <label for="task-time">Time</label>
             <div class="tz-toggle" id="tz-toggle">
-              <button type="button" class="tz-btn active" data-tz="beijing">北京时间</button>
-              <button type="button" class="tz-btn" data-tz="melbourne">墨尔本时间</button>
+              <button type="button" class="tz-btn active" data-tz="beijing">Beijing Time</button>
+              <button type="button" class="tz-btn" data-tz="melbourne">Melbourne Time</button>
             </div>
-            <input type="text" id="task-time" placeholder="如：2026-07-22 14:30" autocomplete="off">
-            <div class="field-hint">也可以只写 07-22 14:30，或直接写 14:30（默认当天）</div>
+            <input type="text" id="task-time" placeholder="e.g. 2026-07-22 14:30" autocomplete="off">
+            <div class="field-hint">You can also just enter 07-22 14:30, or just 14:30 (defaults to today)</div>
           </div>
           <div class="field">
-            <label for="task-duration">时长（mins）</label>
+            <label for="task-duration">Duration (mins)</label>
             <input type="number" id="task-duration" placeholder="60" min="0" step="5">
           </div>
-          <button class="add" id="add-btn">添加</button>
+          <button class="add" id="add-btn">Add</button>
         </div>
       </div>
     </div>
@@ -380,7 +380,7 @@
     try{
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     }catch(e){
-      console.error('保存失败', e);
+      console.error('Failed to save', e);
     }
   }
 
@@ -404,8 +404,8 @@
 
   function fmtDateTime(utcMillis, tz){
     const d = new Date(utcMillis);
-    const dateStr = new Intl.DateTimeFormat('zh-CN', { timeZone: tz, month:'2-digit', day:'2-digit', weekday:'short' }).format(d);
-    const timeStr = new Intl.DateTimeFormat('zh-CN', { timeZone: tz, hour:'2-digit', minute:'2-digit', hour12:false }).format(d);
+    const dateStr = new Intl.DateTimeFormat('en-US', { timeZone: tz, month:'2-digit', day:'2-digit', weekday:'short' }).format(d);
+    const timeStr = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour:'2-digit', minute:'2-digit', hour12:false }).format(d);
     return { dateStr, timeStr };
   }
 
@@ -493,22 +493,22 @@
     let dayLabel = '';
     const tmr = new Date(new Date(todayYmd + 'T00:00:00Z').getTime() + 86400000);
     const tomorrowYmd = ymdInTZ(tmr.getTime(), MEL_TZ);
-    if(melYmd === todayYmd) dayLabel = '今天';
-    else if(melYmd === tomorrowYmd) dayLabel = '明天';
+    if(melYmd === todayYmd) dayLabel = 'Today';
+    else if(melYmd === tomorrowYmd) dayLabel = 'Tomorrow';
 
     if(diffMs < 0){
-      return { text: dayLabel ? `${dayLabel} · 已过时间` : '已过时间', urgent:false, past:true };
+      return { text: dayLabel ? `${dayLabel} · Past due` : 'Past due', urgent:false, past:true };
     }
     const mins = Math.round(diffMs/60000);
     const hrs = Math.floor(mins/60);
     const remMin = mins % 60;
     let countdown;
     if(hrs >= 48){
-      countdown = `还有 ${Math.floor(hrs/24)} 天`;
+      countdown = `in ${Math.floor(hrs/24)}d`;
     } else if(hrs >= 1){
-      countdown = `还有 ${hrs} 小时 ${remMin} 分钟`;
+      countdown = `in ${hrs}h ${remMin}m`;
     } else {
-      countdown = `还有 ${remMin} 分钟`;
+      countdown = `in ${remMin}m`;
     }
     const urgent = mins <= 120;
     return { text: dayLabel ? `${dayLabel} · ${countdown}` : countdown, urgent, past:false };
@@ -517,7 +517,7 @@
   function render(){
     const area = document.getElementById('list-area');
     if(tasks.length === 0){
-      area.innerHTML = `<div class="empty"><strong>还没有安排 🌿</strong></div>`;
+      area.innerHTML = `<div class="empty"><strong>No schedule yet 🌿</strong></div>`;
       return;
     }
 
@@ -533,23 +533,23 @@
       const bj = fmtDateTime(t.utc, BJ_TZ);
       const mel = fmtDateTime(t.utc, MEL_TZ);
       const melYmd = ymdInTZ(t.utc, MEL_TZ);
-      const rel = t.done ? {text:'已完成', urgent:false} : relativeLabel(t.utc, melYmd, todayYmd);
+      const rel = t.done ? {text:'Done', urgent:false} : relativeLabel(t.utc, melYmd, todayYmd);
       const srcCls = t.sourceTz === 'melbourne' ? 'src-mel' : 'src-bj';
       const cls = `${srcCls} ${t.done ? 'done' : (rel.urgent ? 'urgent' : '')}`;
       html += `
         <div class="task ${cls}" data-id="${t.id}">
           <div class="task-times">
             <div class="t-mel-big">${mel.timeStr}</div>
-            <div class="t-date">${mel.dateStr}${t.duration ? ` · ${t.duration}分钟` : ''}</div>
-            <div class="t-bj-ref">北京 <b>${bj.timeStr}</b></div>
+            <div class="t-date">${mel.dateStr}${t.duration ? ` · ${t.duration} min` : ''}</div>
+            <div class="t-bj-ref">Beijing <b>${bj.timeStr}</b></div>
           </div>
           <div class="task-body">
             <p class="task-text">${escapeHtml(t.text)}</p>
             <div class="task-meta ${rel.urgent ? 'urgent':''}">${rel.text}</div>
           </div>
           <div class="task-actions">
-            <button class="icon-btn done-btn" title="标记完成">${t.done ? '↺' : '✓'}</button>
-            <button class="icon-btn del-btn" title="删除">✕</button>
+            <button class="icon-btn done-btn" title="Mark done">${t.done ? '↺' : '✓'}</button>
+            <button class="icon-btn del-btn" title="Delete">✕</button>
           </div>
         </div>`;
     });
@@ -617,7 +617,7 @@
     const utc = wallComponentsToUTC(parsed.y, parsed.mo, parsed.da, parsed.h, parsed.mi, tz);
     tasks.push({ id: 't' + Date.now() + Math.random().toString(36).slice(2,7), text, utc, duration, sourceTz, done:false });
     await saveTasks();
-    textSelectEl.value = '观课';
+    textSelectEl.value = 'Observe class';
     textOtherEl.value = '';
     textOtherEl.style.display = 'none';
     timeEl.value = '';
