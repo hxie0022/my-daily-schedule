@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Daily Schedule</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#2B6E68">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg-a: #EAF7EF;
+    --bg-b: #FDF1F4;
+    --bg-c: #EFF3FC;
+    --bg: #F1F1EA;
+    --paper: #FFFFFF;
+    --ink: #545B54;
+    --ink-soft: #A3AA9E;
+    --line: #E9F1E9;
+    --beijing: #7EB0CC;
+    --beijing-deep: #5C93B0;
+    --beijing-soft: #E7F3F8;
+    --melbourne: #F3AE83;
+    --melbourne-deep: #E08F55;
+    --melbourne-soft: #FDEEE1;
+    --urgent: #F0968A;
+    --urgent-soft: #FDE7E3;
+    --done: #CBD3C7;
+    --btn-green: #2B6E68;
+    --btn-green-hover: #235854;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: linear-gradient(165deg, var(--bg-a) 0%, var(--bg-c) 55%, var(--bg-b) 100%);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: 'Noto Sans SC', sans-serif;
+    padding: 30px 16px 60px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap{ max-width: 960px; margin: 0 auto; }
+
+  .layout{ display:flex; align-items:flex-start; gap: 26px; }
+  .col-left{ flex: 1; min-width: 0; }
+  .col-right{ width: 340px; flex-shrink: 0; display:flex; flex-direction:column; gap: 22px; }
+
+  @media (max-width: 780px){
+    .layout{ flex-direction: column; }
+    .col-right{ width: 100%; order: -1; }
+    .col-left{ width: 100%; order: 2; }
+  }
+
+  header{ margin-bottom: 18px; text-align:center; }
+  h1{
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 600;
+    font-size: 30px;
+    margin: 0;
+    color: #5C6B5E;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---- Clock bridge ---- */
+  .bridge{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    gap: 56px;
+    background: var(--paper);
+    border: none;
+    box-shadow: 0 6px 24px rgba(120,140,120,0.10);
+    border-radius: 26px;
+    padding: 26px 18px 20px;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .bridge::before{
+    content:'';
+    position:absolute;
+    width: 140px; height: 140px;
+    background: radial-gradient(circle, var(--beijing-soft) 0%, transparent 70%);
+    top: -50px; left: -30px;
+    border-radius: 50%;
+    filter: blur(4px);
+  }
+  .bridge::after{
+    content:'';
+    position:absolute;
+    width: 150px; height: 150px;
+    background: radial-gradient(circle, var(--melbourne-soft) 0%, transparent 70%);
+    bottom: -60px; right: -30px;
+    border-radius: 50%;
+    filter: blur(4px);
+  }
+  .clockcol{ display:flex; flex-direction:column; align-items:center; width: 110px; position:relative; z-index:1; }
+  .clockcol svg{ width: 82px; height: 82px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.05)); }
+  .city{
+    font-family:'Noto Sans SC', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    margin-top: 9px;
+  }
+  .city.bj{ color: var(--beijing-deep); }
+  .city.mel{ color: var(--melbourne-deep); }
+  .digital{
+    font-family:'Quicksand', monospace;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    letter-spacing: 0.03em;
+  }
+  /* ---- Form ---- */
+  .card{
+    background: var(--paper);
+    box-shadow: 0 6px 20px rgba(120,140,120,0.08);
+    border-radius: 22px;
+    padding: 20px;
+    margin-bottom: 0;
+  }
+  .card h2{
+    font-family:'Noto Sans SC', sans-serif;
+    font-weight: 600;
+    font-size: 16.5px;
+    margin: 0 0 14px;
+    color: #5C6B5E;
+  }
+  label{
+    display:block;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 0 0 6px;
+    font-weight: 500;
+  }
+  .field{ margin-bottom: 14px; }
+  .tz-toggle{ display:flex; gap: 8px; margin-bottom: 8px; }
+  .tz-btn{
+    flex: 1;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    background: #FCFEFC;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .tz-btn.active[data-tz="beijing"]{ background: var(--beijing-soft); border-color: var(--beijing); color: var(--beijing-deep); }
+  .tz-btn.active[data-tz="melbourne"]{ background: var(--melbourne-soft); border-color: var(--melbourne); color: var(--melbourne-deep); }
+
+  .date-toggle{ display:flex; gap: 8px; margin-bottom: 8px; }
+  .date-btn{
+    flex: 1;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    background: #FCFEFC;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .date-btn.active{ background: #E4F1EE; border-color: var(--btn-green); color: var(--btn-green); }
+  input[type="text"], input[type="datetime-local"], input[type="number"], select{
+    width: 100%;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 14.5px;
+    padding: 11px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    background: #FCFEFC;
+    color: var(--ink);
+  }
+  input:focus{ outline: none; border-color: var(--beijing); background:#fff; }
+  select:focus{ outline: none; border-color: var(--beijing); background:#fff; }
+  input.error{ border-color: var(--urgent) !important; background: var(--urgent-soft) !important; }
+  select.error{ border-color: var(--urgent) !important; background: var(--urgent-soft) !important; }
+  .field-hint{ font-size: 11px; color: var(--ink-soft); margin-top: 6px; line-height: 1.4; }
+
+  button.add{
+    width: 100%;
+    background: linear-gradient(120deg, var(--beijing), var(--melbourne));
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-family:'Noto Sans SC', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 4px;
+    box-shadow: 0 4px 14px rgba(240,170,130,0.30);
+  }
+  button.add:hover{ filter: brightness(1.04); }
+  button.add:active{ transform: translateY(1px); }
+
+  /* ---- Task list ---- */
+  .section-label{
+    font-family:'Quicksand', sans-serif;
+    font-weight:600;
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 22px 4px 10px;
+  }
+
+  .task{
+    display:flex;
+    gap: 12px;
+    background: var(--paper);
+    box-shadow: 0 3px 14px rgba(120,140,120,0.07);
+    border-radius: 18px;
+    padding: 14px 15px;
+    margin-bottom: 11px;
+    border-left: 4px solid var(--melbourne);
+  }
+  .task.src-bj{ border-left-color: var(--beijing); }
+  .task.src-mel{ border-left-color: var(--melbourne); }
+  .task.urgent{ border-left-color: var(--urgent); }
+  .task.done{ border-left-color: var(--done); opacity: 0.55; }
+
+  .task-times{
+    font-family:'Quicksand', sans-serif;
+    font-size: 12px;
+    min-width: 96px;
+    display:flex; flex-direction:column; gap:3px;
+  }
+  .t-mel-big{ color: var(--melbourne-deep); font-weight: 700; font-size: 21px; line-height:1.1; margin: 1px 0 2px; }
+  .t-source{ font-size: 10px; font-weight: 700; margin-bottom: 1px; }
+  .t-source.beijing{ color: var(--beijing-deep); }
+  .t-source.melbourne{ color: var(--melbourne-deep); }
+  .t-date{ color: var(--ink-soft); font-size: 10.5px; font-weight:500; }
+  .t-bj-ref{ color: var(--ink-soft); font-size: 10.5px; font-weight:500; }
+  .t-bj-ref b{ color: var(--beijing-deep); font-weight:600; }
+
+  .task-body{ flex: 1; min-width: 0; }
+  .task-text{
+    font-size: 14.5px;
+    line-height: 1.45;
+    word-break: break-word;
+    margin: 0 0 5px;
+    color: #4A5049;
+  }
+  .task.done .task-text{ text-decoration: line-through; }
+  .task-meta{
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .task-meta.urgent{ color: var(--urgent); font-weight: 700; }
+
+  .task-actions{ display:flex; flex-direction:column; gap:6px; }
+  .icon-btn{
+    border: none;
+    background: #F5F8F4;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-size: 14px;
+    width: 26px; height: 26px;
+    border-radius: 8px;
+    line-height:1;
+  }
+  .icon-btn:hover{ background: var(--beijing-soft); color: var(--beijing-deep); }
+
+  .empty{
+    text-align:center;
+    padding: 38px 24px;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    border-radius: 22px;
+    background: var(--paper);
+    box-shadow: 0 6px 20px rgba(120,140,120,0.06);
+  }
+  .empty strong{ display:block; color: #5C6B5E; font-family:'Noto Sans SC', sans-serif; font-weight:600; font-size: 16px; margin-bottom: 7px; }
+
+  .loading{ text-align:center; padding: 40px 0; color: var(--ink-soft); font-size: 13px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>📅 My Daily Schedule</h1>
+    </header>
+
+    <div class="layout">
+      <div class="col-left">
+        <div id="list-area">
+          <div class="loading">Loading…</div>
+        </div>
+      </div>
+
+      <div class="col-right">
+        <div class="bridge">
+          <div class="clockcol">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="46" fill="#fff" stroke="var(--line)" stroke-width="1.5"/>
+              <g id="ticks-bj"></g>
+              <line id="hand-h-bj" x1="50" y1="50" x2="50" y2="28" stroke="#7A8579" stroke-width="3.5" stroke-linecap="round"/>
+              <line id="hand-m-bj" x1="50" y1="50" x2="50" y2="18" stroke="#7A8579" stroke-width="2.5" stroke-linecap="round"/>
+              <line id="hand-s-bj" x1="50" y1="50" x2="50" y2="15" stroke="var(--beijing)" stroke-width="1" stroke-linecap="round"/>
+              <circle cx="50" cy="50" r="2.5" fill="var(--beijing-deep)"/>
+            </svg>
+            <div class="city bj">Beijing</div>
+            <div class="digital" id="digital-bj">--:--</div>
+          </div>
+
+          <div class="clockcol">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="46" fill="#fff" stroke="var(--line)" stroke-width="1.5"/>
+              <g id="ticks-mel"></g>
+              <line id="hand-h-mel" x1="50" y1="50" x2="50" y2="28" stroke="#7A8579" stroke-width="3.5" stroke-linecap="round"/>
+              <line id="hand-m-mel" x1="50" y1="50" x2="50" y2="18" stroke="#7A8579" stroke-width="2.5" stroke-linecap="round"/>
+              <line id="hand-s-mel" x1="50" y1="50" x2="50" y2="15" stroke="var(--melbourne)" stroke-width="1" stroke-linecap="round"/>
+              <circle cx="50" cy="50" r="2.5" fill="var(--melbourne-deep)"/>
+            </svg>
+            <div class="city mel">Melbourne</div>
+            <div class="digital" id="digital-mel">--:--</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Add a schedule item</h2>
+          <div class="field">
+            <label for="task-text">Content</label>
+            <select id="task-text">
+              <option value="Observe class">Observe class</option>
+              <option value="Grade homework">Grade homework</option>
+              <option value="Teach class">Teach class</option>
+              <option value="__other__">Other…</option>
+            </select>
+            <input type="text" id="task-text-other" placeholder="Enter details" style="display:none; margin-top:8px;">
+          </div>
+          <div class="field">
+            <label for="task-time">Time</label>
+            <div class="tz-toggle" id="tz-toggle">
+              <button type="button" class="tz-btn active" data-tz="beijing">Beijing Time</button>
+              <button type="button" class="tz-btn" data-tz="melbourne">Melbourne Time</button>
+            </div>
+            <input type="text" id="task-time" placeholder="e.g. 2026-07-22 14:30" autocomplete="off">
+            <div class="field-hint">You can also just enter 07-22 14:30, or just 14:30 (defaults to today)</div>
+          </div>
+          <div class="field">
+            <label for="task-duration">Duration (mins)</label>
+            <input type="number" id="task-duration" placeholder="60" min="0" step="5">
+          </div>
+          <button class="add" id="add-btn">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const BJ_TZ = 'Asia/Shanghai';
+  const MEL_TZ = 'Australia/Melbourne';
+  const STORAGE_KEY = 'bj-mel-tasks';
+
+  let tasks = [];
+
+  async function loadTasks(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      tasks = raw ? JSON.parse(raw) : [];
+    }catch(e){
+      tasks = [];
+    }
+  }
+  async function saveTasks(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }catch(e){
+      console.error('Failed to save', e);
+    }
+  }
+
+  function getOffsetHours(tz, date){
+    const fmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' });
+    const part = fmt.formatToParts(date).find(p => p.type === 'timeZoneName').value;
+    const m = part.match(/GMT([+-]\d+)(?::(\d+))?/);
+    if(!m) return 0;
+    let h = parseInt(m[1], 10);
+    if(m[2]) h += (h < 0 ? -1 : 1) * (parseInt(m[2],10)/60);
+    return h;
+  }
+
+  function getTimeParts(tz, date){
+    const fmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+    const obj = {};
+    fmt.formatToParts(date).forEach(p => { if(p.type !== 'literal') obj[p.type] = parseInt(p.value,10); });
+    if(obj.hour === 24) obj.hour = 0;
+    return obj;
+  }
+
+  function fmtDateTime(utcMillis, tz){
+    const d = new Date(utcMillis);
+    const dateStr = new Intl.DateTimeFormat('en-US', { timeZone: tz, month:'2-digit', day:'2-digit', weekday:'short' }).format(d);
+    const timeStr = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour:'2-digit', minute:'2-digit', hour12:false }).format(d);
+    return { dateStr, timeStr };
+  }
+
+  function ymdInTZ(utcMillis, tz){
+    return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date(utcMillis));
+  }
+
+  // Convert wall-clock date/time components in a given IANA timezone to UTC millis.
+  // Iterates twice to correctly resolve DST-affected offsets (needed for Melbourne).
+  function wallComponentsToUTC(y, mo, da, h, mi, tz){
+    const base = Date.UTC(y, mo-1, da, h, mi);
+    let guess = base;
+    for(let i=0;i<2;i++){
+      const off = getOffsetHours(tz, new Date(guess));
+      guess = base - off*3600*1000;
+    }
+    return guess;
+  }
+
+  function todayComponentsInTZ(tz){
+    const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit' });
+    const parts = {};
+    fmt.formatToParts(new Date()).forEach(p => { if(p.type !== 'literal') parts[p.type] = parseInt(p.value,10); });
+    return parts; // {year, month, day}
+  }
+
+  // Parse typed text into {y,mo,da,h,mi}, filling in missing date parts from "today" in tz.
+  // Accepts: "2026-07-22 14:30", "2026/7/22 14:30", "07-22 14:30", "7/22 14:30", "14:30"
+  function parseTypedDateTime(str, tz){
+    str = str.trim();
+    let m = str.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})[ T](\d{1,2}):(\d{2})$/);
+    if(m) return { y:+m[1], mo:+m[2], da:+m[3], h:+m[4], mi:+m[5] };
+
+    const today = todayComponentsInTZ(tz);
+
+    m = str.match(/^(\d{1,2})[-\/](\d{1,2})[ ](\d{1,2}):(\d{2})$/);
+    if(m) return { y: today.year, mo:+m[1], da:+m[2], h:+m[3], mi:+m[4] };
+
+    m = str.match(/^(\d{1,2}):(\d{2})$/);
+    if(m) return { y: today.year, mo: today.month, da: today.day, h:+m[1], mi:+m[2] };
+
+    return null;
+  }
+
+  function buildTicks(gid){
+    const g = document.getElementById(gid);
+    let html = '';
+    for(let i=0;i<12;i++){
+      const angle = i*30;
+      const isMajor = i % 3 === 0;
+      const len = isMajor ? 2 : 1.2;
+      html += `<line x1="50" y1="6" x2="50" y2="${isMajor ? 10 : 9}" stroke="#B9C4B6" stroke-width="${len}" stroke-linecap="round" transform="rotate(${angle} 50 50)"/>`;
+    }
+    g.innerHTML = html;
+  }
+  buildTicks('ticks-bj');
+  buildTicks('ticks-mel');
+
+  function updateClock(tz, prefix){
+    const now = new Date();
+    const {hour, minute, second} = getTimeParts(tz, now);
+    const hAngle = (hour % 12) * 30 + minute * 0.5;
+    const mAngle = minute * 6 + second * 0.1;
+    const sAngle = second * 6;
+    document.getElementById(`hand-h-${prefix}`).setAttribute('transform', `rotate(${hAngle} 50 50)`);
+    document.getElementById(`hand-m-${prefix}`).setAttribute('transform', `rotate(${mAngle} 50 50)`);
+    document.getElementById(`hand-s-${prefix}`).setAttribute('transform', `rotate(${sAngle} 50 50)`);
+    const ampm = hour < 12 ? 'AM' : 'PM';
+    const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+    const hh = String(hour12).padStart(2,'0');
+    const mm = String(minute).padStart(2,'0');
+    document.getElementById(`digital-${prefix}`).textContent = `${hh}:${mm} ${ampm}`;
+  }
+
+  function tick(){
+    updateClock(BJ_TZ, 'bj');
+    updateClock(MEL_TZ, 'mel');
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  function relativeLabel(utcMillis, melYmd, todayYmd){
+    const now = Date.now();
+    const diffMs = utcMillis - now;
+    let dayLabel = '';
+    const tmr = new Date(new Date(todayYmd + 'T00:00:00Z').getTime() + 86400000);
+    const tomorrowYmd = ymdInTZ(tmr.getTime(), MEL_TZ);
+    if(melYmd === todayYmd) dayLabel = 'Today';
+    else if(melYmd === tomorrowYmd) dayLabel = 'Tomorrow';
+
+    if(diffMs < 0){
+      return { text: dayLabel ? `${dayLabel} · Past due` : 'Past due', urgent:false, past:true };
+    }
+    const mins = Math.round(diffMs/60000);
+    const hrs = Math.floor(mins/60);
+    const remMin = mins % 60;
+    let countdown;
+    if(hrs >= 48){
+      countdown = `in ${Math.floor(hrs/24)}d`;
+    } else if(hrs >= 1){
+      countdown = `in ${hrs}h ${remMin}m`;
+    } else {
+      countdown = `in ${remMin}m`;
+    }
+    const urgent = mins <= 120;
+    return { text: dayLabel ? `${dayLabel} · ${countdown}` : countdown, urgent, past:false };
+  }
+
+  function render(){
+    const area = document.getElementById('list-area');
+    if(tasks.length === 0){
+      area.innerHTML = `<div class="empty"><strong>No schedule yet 🌿</strong></div>`;
+      return;
+    }
+
+    const sorted = [...tasks].sort((a,b) => {
+      if(a.done !== b.done) return a.done ? 1 : -1;
+      return a.utc - b.utc;
+    });
+
+    const todayYmd = ymdInTZ(Date.now(), MEL_TZ);
+
+    let html = '';
+    sorted.forEach(t => {
+      const bj = fmtDateTime(t.utc, BJ_TZ);
+      const mel = fmtDateTime(t.utc, MEL_TZ);
+      const melYmd = ymdInTZ(t.utc, MEL_TZ);
+      const rel = t.done ? {text:'Done', urgent:false} : relativeLabel(t.utc, melYmd, todayYmd);
+      const srcCls = t.sourceTz === 'melbourne' ? 'src-mel' : 'src-bj';
+      const cls = `${srcCls} ${t.done ? 'done' : (rel.urgent ? 'urgent' : '')}`;
+      html += `
+        <div class="task ${cls}" data-id="${t.id}">
+          <div class="task-times">
+            <div class="t-mel-big">${mel.timeStr}</div>
+            <div class="t-date">${mel.dateStr}${t.duration ? ` · ${t.duration} min` : ''}</div>
+            <div class="t-bj-ref">Beijing <b>${bj.timeStr}</b></div>
+          </div>
+          <div class="task-body">
+            <p class="task-text">${escapeHtml(t.text)}</p>
+            <div class="task-meta ${rel.urgent ? 'urgent':''}">${rel.text}</div>
+          </div>
+          <div class="task-actions">
+            <button class="icon-btn done-btn" title="Mark done">${t.done ? '↺' : '✓'}</button>
+            <button class="icon-btn del-btn" title="Delete">✕</button>
+          </div>
+        </div>`;
+    });
+    area.innerHTML = html;
+
+    area.querySelectorAll('.done-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.closest('.task').dataset.id;
+        const t = tasks.find(x => x.id === id);
+        if(t){ t.done = !t.done; await saveTasks(); render(); }
+      });
+    });
+    area.querySelectorAll('.del-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.closest('.task').dataset.id;
+        tasks = tasks.filter(x => x.id !== id);
+        await saveTasks(); render();
+      });
+    });
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  let selectedTz = 'beijing';
+  document.querySelectorAll('.tz-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tz-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedTz = btn.dataset.tz;
+    });
+  });
+
+  document.getElementById('task-time').addEventListener('input', (e) => {
+    e.target.classList.remove('error');
+  });
+
+  const textSelectEl = document.getElementById('task-text');
+  const textOtherEl = document.getElementById('task-text-other');
+  textSelectEl.addEventListener('change', () => {
+    if(textSelectEl.value === '__other__'){
+      textOtherEl.style.display = 'block';
+      textOtherEl.focus();
+    } else {
+      textOtherEl.style.display = 'none';
+      textOtherEl.value = '';
+    }
+  });
+
+  async function handleAddTask(){
+    const timeEl = document.getElementById('task-time');
+    const durEl = document.getElementById('task-duration');
+    const text = textSelectEl.value === '__other__' ? textOtherEl.value.trim() : textSelectEl.value;
+    const value = timeEl.value.trim();
+    const duration = durEl.value ? parseInt(durEl.value, 10) : 60;
+    if(!text){ textOtherEl.style.display = 'block'; textOtherEl.focus(); return; }
+    if(!value){ timeEl.classList.add('error'); timeEl.focus(); return; }
+
+    const sourceTz = selectedTz;
+    const tz = sourceTz === 'melbourne' ? MEL_TZ : BJ_TZ;
+    const parsed = parseTypedDateTime(value, tz);
+    if(!parsed){ timeEl.classList.add('error'); timeEl.focus(); return; }
+
+    const utc = wallComponentsToUTC(parsed.y, parsed.mo, parsed.da, parsed.h, parsed.mi, tz);
+    tasks.push({ id: 't' + Date.now() + Math.random().toString(36).slice(2,7), text, utc, duration, sourceTz, done:false });
+    await saveTasks();
+    textSelectEl.value = 'Observe class';
+    textOtherEl.value = '';
+    textOtherEl.style.display = 'none';
+    timeEl.value = '';
+    durEl.value = '';
+    render();
+  }
+
+  document.getElementById('add-btn').addEventListener('click', handleAddTask);
+
+  ['task-text', 'task-text-other', 'task-time', 'task-duration'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        handleAddTask();
+      }
+    });
+  });
+
+  (async function init(){
+    await loadTasks();
+    render();
+  })();
+})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
