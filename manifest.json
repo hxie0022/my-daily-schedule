@@ -1,0 +1,15 @@
+{
+  "name": "今日安排 · 北京墨尔本",
+  "short_name": "今日安排",
+  "description": "记录北京时间安排，自动换算成墨尔本时间",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#EAF7EF",
+  "theme_color": "#2B6E68",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
